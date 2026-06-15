@@ -1,0 +1,30 @@
+{
+	"schemaVersion": 1,
+	"id": "slotglow",
+	"version": "${version}",
+	"name": "Slot Glow",
+	"description": "This mod adds slot highlighting in inventories similar to the Bedrock Edition, but with the ability to choose your own highlight color.",
+	"authors": [
+		"euruseve"
+	],
+	"contact": {
+		"sources": "https://github.com/euruseve/SlotGlowMod"
+	},
+	"license": "MIT",
+	"icon": "assets/slotglow/icon.png",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"net.euruseve.slotglow.SlotGlowClient"
+		]
+	},
+	"mixins": [
+		"slotglow.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.19.3",
+		"minecraft": "~26.1.2",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}
