@@ -58,6 +58,16 @@ public class ConfigScreen extends Screen {
         colorButton.active = Config.HIGHLIGHT_MODE.get() == Config.HighlightMode.CUSTOM;
 
         addRenderableWidget(colorButton);
+
+        int backWidth = 100;
+        int backHeight = 20;
+        int backX = (this.width - backWidth) / 2;
+        int backY = this.height - HEADER_HEIGHT + (HEADER_HEIGHT - backHeight) / 2;
+
+        addRenderableWidget(Button.builder(
+                Component.literal("Back"),
+                button -> this.onClose()
+        ).bounds(backX, backY, backWidth, backHeight).build());
     }
 
     private void cycleMode() {

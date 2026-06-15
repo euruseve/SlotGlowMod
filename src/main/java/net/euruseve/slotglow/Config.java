@@ -22,7 +22,7 @@ public class Config {
 
     public static ModConfigSpec.IntValue HIGHLIGHT_COLOR = BUILDER
             .comment("Color used for the slot highlight")
-            .defineInRange("highlightColor", 0xFF4181BF, 0xFF000000, 0xFFFFFFFF);
+            .defineInRange("highlightColor", 0xFFA5D977, 0xFF000000, 0xFFFFFFFF);
 
     public static ModConfigSpec SPEC = BUILDER.build();
 }
