@@ -13,7 +13,7 @@ public class ModCommands {
                            .executes(ctx -> {
                                 Minecraft.getInstance().execute(() -> {
                                 Minecraft.getInstance().mouseHandler.releaseMouse();
-                                Minecraft.getInstance().setScreen(new ConfigScreen());
+                                Minecraft.getInstance().gui.setScreen(new ConfigScreen());
                             });
                         return 1;
                     })
