@@ -51,7 +51,7 @@ public class ConfigScreen extends Screen {
 
         colorButton = ColorPreviewButton.create(
                 buttonX + labelWidth, 70, buttonWidth - labelWidth, 20,
-                button -> Minecraft.getInstance().setScreen(
+                button -> Minecraft.getInstance().gui.setScreen(
                         new ColorPickerScreen(this, () -> ColorPreviewButton.refresh(colorButton))
                 )
         );

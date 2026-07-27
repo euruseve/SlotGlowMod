@@ -21,7 +21,7 @@ the command `/slotglow`
 
 ### Compatibility
 * Client-side
-* NeoForged 26.1.2
+* NeoForged 26.2
 
 ### License
 Licensed under MIT.

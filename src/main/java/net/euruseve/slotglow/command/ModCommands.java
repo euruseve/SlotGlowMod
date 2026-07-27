@@ -12,7 +12,7 @@ public class ModCommands {
                 Commands.literal("slotglow")
                         .executes(ctx -> {
                             Minecraft.getInstance().execute(() -> {
-                                Minecraft.getInstance().setScreen(new ConfigScreen());
+                                Minecraft.getInstance().gui.setScreen(new ConfigScreen());
                             });
                             return 1;
                         })
