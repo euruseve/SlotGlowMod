@@ -25,4 +25,24 @@ public class Config {
             .defineInRange("highlightColor", 0xFFA5D977, 0xFF000000, 0xFFFFFFFF);
 
     public static ModConfigSpec SPEC = BUILDER.build();
+
+    public static HighlightMode getHighlightMode() {
+        return HIGHLIGHT_MODE.get();
+    }
+
+    public static int getHighlightColor() {
+        return HIGHLIGHT_COLOR.get();
+    }
+
+    public static void setHighlightMode(HighlightMode mode) {
+        HIGHLIGHT_MODE.set(mode);
+    }
+
+    public static void setHighlightColor(int color) {
+        HIGHLIGHT_COLOR.set(color);
+    }
+
+    public static void save() {
+        SPEC.save();
+    }
 }

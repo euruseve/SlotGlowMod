@@ -10,9 +10,8 @@ A lightweight client-side mod that replaces the vanilla slot highlight.
 ### Screenshots
 <p>
   <img src="docs/sc1.jpg" width="200" alt="Highlighting">
-  <img src="docs/sc2.jpg" width="400" alt="Config screen">
 </p>
-<img src="docs/sc3.jpg" width="400" alt="Color picker">
+<img src="docs/sc3.jpg" width="500" alt="Color picker">
 
 ### Configuration
 Open the config screen via:
