@@ -1,8 +1,10 @@
 package net.euruseve.slotglow.gui;
 
 import net.euruseve.slotglow.config.Config;
-import net.euruseve.slotglow.gui.buttons.ColorPreviewButton;
-import net.euruseve.slotglow.gui.buttons.TitledLabel;
+import net.euruseve.slotglow.gui.components.SlotPreviewWidget;
+import net.euruseve.slotglow.gui.components.ColorSection;
+import net.euruseve.slotglow.gui.components.HeaderWidget;
+import net.euruseve.slotglow.gui.components.ModeSection;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
@@ -11,12 +13,17 @@ import net.minecraft.network.chat.Component;
 
 public class ConfigScreen extends Screen {
 
-    private final int HEADER_HEIGHT = 25;
-    private final int HEADER_COLOR = 0xCE171010;
-    private final int HEADER_BORDER_COLOR = 0xCE2B2B2B;
+    private static final int PANEL_W       = 340;
+    private static final int PAD           = 20;
+    private static final int DIVIDER_COLOR = 0xFF3A3A3A;
+    private static final int BG_COLOR      = 0xC0101010;
 
-    private Button modeButton;
-    private Button colorButton;
+    private int panelX, startY, dividerY;
+
+    private HeaderWidget     header;
+    private SlotPreviewWidget preview;
+    private ModeSection      modeSection;
+    private ColorSection     colorSection;
 
     public ConfigScreen() {
         super(Component.literal("SlotGlow Config"));
@@ -25,103 +32,99 @@ public class ConfigScreen extends Screen {
     @Override
     protected void init() {
         super.init();
-        initButtons();
-    }
 
-    private void initButtons() {
-        int buttonWidth = 300;
-        int labelWidth = buttonWidth * 2 / 3;
-        int buttonX = (this.width - buttonWidth) / 2;
+        panelX = (this.width - PANEL_W) / 2;
 
-        addRenderableWidget(new TitledLabel(
-                buttonX, 40, labelWidth, 20,
-                Component.literal("Highlight Mode")
-        ));
+        int totalH = 18 + 10 + 1 + 10       // header row + gap + divider + gap
+                + 9 + 4 + 20 + 20           // color+mode labels + controls + gap
+                + (14 + 8) * 3              // 3 sliders
+                + 10 + 20;                  // footer gap + buttons
 
-        modeButton = Button.builder(
-                Component.literal(modeLabel(Config.getHighlightMode())),
-                button -> cycleMode()
-        ).bounds(buttonX + labelWidth, 40, buttonWidth - labelWidth, 20).build();
+        startY = Math.max(16, (this.height - totalH) / 2);
 
-        addRenderableWidget(modeButton);
+        int y = startY;
 
-        addRenderableWidget(new TitledLabel(
-                buttonX, 70, labelWidth, 20,
-                Component.literal("Highlighting Color")
-        ));
+        int previewW = 18 * 5;
+        int headerW  = PANEL_W - PAD * 2 - previewW - 8;
 
-        colorButton = ColorPreviewButton.create(
-                buttonX + labelWidth, 70, buttonWidth - labelWidth, 20,
-                button -> Minecraft.getInstance().setScreen(
-                        new ColorPickerScreen(this, () -> ColorPreviewButton.refresh(colorButton))
-                )
+        header = new HeaderWidget(panelX + PAD, y, headerW, 18);
+        addRenderableWidget(header);
+
+        preview = new SlotPreviewWidget(
+                panelX + PANEL_W - PAD - previewW, y,
+                () -> colorSection != null ? colorSection.getSelectedColor() : Config.getHighlightColor(),
+                () -> modeSection  != null ? modeSection.getMode()           : Config.getHighlightMode()
         );
-        colorButton.active = Config.getHighlightMode() == Config.HighlightMode.CUSTOM;
+        addRenderableWidget(preview);
+        y += 18 + 10;
 
-        addRenderableWidget(colorButton);
+        dividerY = y;
+        y += 1 + 10;
+        int halfW = (PANEL_W - PAD * 2) / 2;
 
-        int backWidth = 100;
-        int backHeight = 20;
-        int backX = (this.width - backWidth) / 2;
-        int backY = this.height - HEADER_HEIGHT + (HEADER_HEIGHT - backHeight) / 2;
+        modeSection = new ModeSection(
+                panelX + PAD + halfW + 8, y, halfW - 8, 9 + 4 + 20,
+                Config.getHighlightMode(),
+                newMode -> {
+                    colorSection.setCanEdit(newMode == Config.HighlightMode.CUSTOM);
+                }
+        );
+        addRenderableWidget(modeSection);
+        modeSection.init(this::addRenderableWidget);
+
+        colorSection = new ColorSection(
+                panelX + PAD, y, halfW, 9 + 4 + 20 + 20 + (14 + 8) * 3,
+                Config.getHighlightColor(),
+                Config.getHighlightMode() == Config.HighlightMode.CUSTOM,
+                newColor -> {}
+        );
+        addRenderableWidget(colorSection);
+        colorSection.init(this::addRenderableWidget);
+
+        int btnW    = 90;
+        int totalBW = btnW * 3 + 8 * 2;
+        int btnX    = (this.width - totalBW) / 2;
+        int btnY    = this.height - 36;
 
         addRenderableWidget(Button.builder(
-                Component.literal("Back"),
-                button -> this.onClose()
-        ).bounds(backX, backY, backWidth, backHeight).build());
+                Component.literal("Reset"),
+                btn -> {
+                    clearWidgets();
+                    Config.setHighlightColor(0xFFA5D977);
+                    init();
+                }
+        ).bounds(btnX, btnY, btnW, 20).build());
+
+        addRenderableWidget(Button.builder(
+                Component.literal("Cancel"),
+                btn -> this.onClose()
+        ).bounds(btnX + btnW + 8, btnY, btnW, 20).build());
+
+        addRenderableWidget(Button.builder(
+                Component.literal("Apply"),
+                btn -> applyAndClose()
+        ).bounds(btnX + (btnW + 8) * 2, btnY, btnW, 20).build());
     }
 
-    private void cycleMode() {
-        Config.HighlightMode current = Config.getHighlightMode();
-        Config.HighlightMode next = switch (current) {
-            case DEFAULT -> Config.HighlightMode.CUSTOM;
-            case CUSTOM -> Config.HighlightMode.NO_DIM;
-            case NO_DIM -> Config.HighlightMode.DEFAULT;
-        };
-
-        Config.setHighlightMode(next);
+    private void applyAndClose() {
+        Config.setHighlightMode(modeSection.getMode());
+        Config.setHighlightColor(colorSection.getSelectedColor());
         Config.save();
-
-        modeButton.setMessage(Component.literal(modeLabel(next)));
-        colorButton.active = next == Config.HighlightMode.CUSTOM;
-    }
-
-    private static String modeLabel(Config.HighlightMode mode) {
-        return switch (mode) {
-            case DEFAULT -> "Default";
-            case CUSTOM -> "Custom";
-            case NO_DIM -> "Default (No Dim)";
-        };
+        this.onClose();
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-        renderHeaderBg(graphics);
-        renderBg(graphics);
-        renderFooterBg(graphics);
-
-        Component title = Component.literal("SlotGlow Config");
-        int textWidth = this.font.width(title);
-        int x = (this.width - textWidth) / 2;
-        int y = (HEADER_HEIGHT - 9) / 2;
-        graphics.text(this.font, title, x, y, 0xFFFFFFFF, false);
-
+    public void extractRenderState(GuiGraphicsExtractor graphics,
+                                   int mouseX, int mouseY, float partialTick) {
+        graphics.fill(0, 0, this.width, this.height, BG_COLOR);
+        graphics.fill(panelX + PAD, dividerY,
+                panelX + PANEL_W - PAD, dividerY + 1,
+                DIVIDER_COLOR);
         super.extractRenderState(graphics, mouseX, mouseY, partialTick);
     }
 
-    private void renderHeaderBg(GuiGraphicsExtractor graphics) {
-        graphics.fill(0, 0, this.width, HEADER_HEIGHT, HEADER_COLOR);
-        graphics.fill(0, HEADER_HEIGHT - 1, this.width, HEADER_HEIGHT, HEADER_BORDER_COLOR);
-    }
-
-    private void renderFooterBg(GuiGraphicsExtractor graphics) {
-        int y = this.height - HEADER_HEIGHT;
-        graphics.fill(0, y, this.width, y + HEADER_HEIGHT, HEADER_COLOR);
-        graphics.fill(0, y, this.width, y + 1, HEADER_BORDER_COLOR);
-    }
-
-    private void renderBg(GuiGraphicsExtractor graphics) {
-        final int color = 0x882B2B2B;
-        graphics.fill(0, HEADER_HEIGHT, this.width, this.height - HEADER_HEIGHT, color);
+    @Override
+    public void onClose() {
+        Minecraft.getInstance().setScreen(null);
     }
 }
